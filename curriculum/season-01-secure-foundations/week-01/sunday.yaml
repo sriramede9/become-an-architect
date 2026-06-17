@@ -1,0 +1,26 @@
+metadata:
+  season_name: "Springfield Goes Cloud Native"
+  season_arc: "Secure Foundations"
+  week: 1
+  episode_number: 4
+  day: "Sunday"
+  is_review: true
+  episode_title: "The Airborne Pig Meltdown"
+  previous_episode: "The Great Subnet Divide"
+  next_episode: "Week 2: Inter-Service Connections"
+
+technical_core:
+  topic: "Incident Response, CloudTrail Analytics, and Forensic Infrastructure Diagnostics"
+  target_services: "AWS CloudTrail, IAM Credential Reports, GuardDuty Threat Logs"
+  simpsons_angle: "Homer pins a single compute instance to 100% capacity during a high-traffic promotional event, refuses to scale horizontally, and causes a cascading infrastructure collapse while shouting 'it's still good!'"
+
+forensic_prompts:
+  timeline_prompt: "Generate a realistic structural chronological timeline outlining the traffic surge, server CPU exhaustion, and the downstream database connection timeout pool lockups."
+  root_cause_prompt: "Analyze the core systemic flaw of a tightly coupled infrastructure that relies on fixed capacity constraints inside a single availability zone."
+  financial_prompt: "Detail the simulated business loss metrics and customer drop-off costs caused by a 3-hour system blackout."
+  lessons_prompt: "Outline clear remediation steps: Introduce Elastic Load Balancing, horizontally auto-scaled compute fleets across Multi-AZ zones, and read-caching data abstraction layers."
+
+review_drills:
+  - "Why is sharing the master AWS root user credentials an absolute security failure?"
+  - "How do IAM Roles deliver short-lived session access details to an EC2 instance profile without using long-term keys?"
+  - "What key infrastructure difference separates a public subnet routing table from a private subnet layout?"

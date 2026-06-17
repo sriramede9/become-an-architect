@@ -1,0 +1,56 @@
+metadata:
+  season_name: "Springfield Goes Cloud Native"
+  season_arc: "Secure Foundations"
+  week: 1
+  episode_number: 3
+  day: "Friday"
+  is_review: false
+  episode_title: "The Great Subnet Divide"
+  previous_episode: "Smithers and the Dynamic Badge"
+  next_episode: "The Airborne Pig Meltdown"
+
+technical_core:
+  topic: "Virtual Private Clouds, Subnet Isolation, and Network Access Firewalls"
+  target_services: "Amazon VPC, Public and Private Subnets, Route Tables, Internet Gateways"
+  surprising_fact: "A private subnet can safely handle outgoing internet connections without exposing a single public IP mapping to incoming traffic waves."
+  misconception: "Configuring a subnet to be labeled 'private' blocks all internal lateral traffic communication routes by default."
+
+narrative_hooks:
+  simpsons_angle: "Lisa convinces the town council to build a high-security network containment wall completely isolating Springfield's quiet residential suburbs from the hazardous industrial zone."
+  burns_proposal: "Let's streamline network mapping by dropping our web user interface, backend processing software, and data stores inside a single public subnet with one shared gateway out to the highway."
+  barts_incident: "Bart scales a local boundary fence, discovers an exposed backend database running on a public IP route layout, and runs a basic script to monitor traffic."
+
+brain_upgrade:
+  beginner: "Private subnets are magically secure out of the box."
+  intermediate: "Placing components in a private subnet and setting up a basic NAT Gateway means your network tier is completely secure."
+  architect: "Network perimeter safety requires explicit route table segregation, isolated security groups, and decoupled internal tiers."
+
+decision_tree:
+  scenario: "You need to grant an isolated database engine access to download software patches from an external vendor without assigning it a public IP address or allowing incoming internet traffic."
+  options:
+    A: "Map an Internet Gateway destination entry directly into the database subnet routing table."
+    B: "Route database egress traffic through a NAT Gateway positioned inside a public subnet tier."
+    C: "Deploy an enterprise AWS Direct Connect line for basic package transfers."
+    D: "Expose the database tier publicly but block unwanted connections using software settings on the instance."
+  correct_option: "B"
+  rationale: "A NAT Gateway safely translates internal private traffic outbound to the public web while rejecting any inbound initialization records from external sources."
+
+exam_radar:
+  trigger: "Trigger phrases to analyze: 'Isolate Database Backend Clusters' or 'Highly Compliant Private Data Systems'."
+  distractor: "Choosing options that add Internet Gateway destinations to backend or state tier route definitions."
+  truth: "Production database environments must live inside isolated subnets with zero direct routing metrics linking to an Internet Gateway."
+
+interview:
+  challenge: "The development team wants to deploy production database instances inside the public tier to simplify external reporting connections. Suggest an alternative."
+  answer: "I would reject public database exposure. I would place the database tier in isolated subnets and implement AWS Client VPN or VPC Endpoints, keeping data processing paths away from public routing vectors."
+
+project:
+  title: "Multi-Tier Isolated Network Deployment"
+  objective: "Build a custom multi-tier VPC featuring a public subnet web tier, a private application tier, and an isolated database sandbox."
+  steps:
+    - "Provision a custom Amazon VPC structure allocating a /24 CIDR block framework."
+    - "Construct public, private, and isolated subnets across independent Availability Zones."
+    - "Link an Internet Gateway configuration profile exclusively to the public subnet route paths."
+
+technical_math_prompt: "Formulate host capacity calculations within a specific /24 CIDR allocation mask accounting for the five default reserved cloud network addresses."
+cliffhanger_prompt: "Our perimeters are built and our credentials are secured. But what happens when a sudden traffic wave hits Springfield, pinning our single application server to 100% capacity while Homer refuses to scale out?"

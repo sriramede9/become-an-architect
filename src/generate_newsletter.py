@@ -1,12 +1,13 @@
 import os
 import json
 import yaml
+from jinja2 import Template
 from google import genai
 from google.genai import types
 
 STATE_FILE = "data/state.json"
 OUTPUT_DIR = "newsletters"
-DAYS = ["mon", "wed", "fri", "sun"]
+DAYS = ["monday", "wednesday", "friday", "sunday"]
 
 def load_state():
     if os.path.exists(STATE_FILE):
@@ -15,140 +16,156 @@ def load_state():
                 return json.load(f)
         except Exception:
             pass
-    return {"week": 1, "day_index": 0}
+    return {"season_folder": "season-01-secure-foundations", "week": 1, "day_index": 0}
 
-def save_state(current_week, current_day_index):
+def save_state(season_folder, current_week, current_day_index):
     next_day_index = current_day_index + 1
     next_week = current_week
-
+    
     if next_day_index >= 4:
         next_day_index = 0
         next_week += 1
-
+        
     with open(STATE_FILE, "w", encoding="utf-8") as f:
-        json.dump({"week": next_week, "day_index": next_day_index}, f, indent=4)
+        json.dump({
+            "season_folder": season_folder,
+            "week": next_week,
+            "day_index": next_day_index
+        }, f, indent=4)
+
+def get_valid_model(client):
+    """Queries live models from the user API profile to guarantee 404 elimination."""
+    try:
+        available_models = [m.name for m in client.models.list()]
+        for model in ["models/gemini-2.5-flash", "models/gemini-1.5-flash"]:
+            if model in available_models:
+                return model
+    except Exception:
+        pass
+    return "gemini-2.5-flash"
 
 def main():
     state = load_state()
+    season = state["season_folder"]
     week = state["week"]
     day_index = state["day_index"]
     current_day = DAYS[day_index]
 
-    yaml_path = f"curriculum/week-{week:02d}-{current_day}.yaml"
+    yaml_path = f"curriculum/{season}/week-{week:02d}/{current_day}.yaml"
     if not os.path.exists(yaml_path):
-        print(f"File target not found, terminating gracefully: {yaml_path}")
+        print(f"Target configuration card file missing: {yaml_path}")
         return
 
     with open(yaml_path, "r", encoding="utf-8") as f:
         meta = yaml.safe_load(f)
 
-    api_key = os.environ.get("GEMINI_API_KEY")
-    if not api_key:
-        raise ValueError("Critical Failure: Missing required GEMINI_API_KEY environment variable.")
+    is_review = meta["metadata"].get("is_review", False)
+    template_path = "templates/sunday_disaster.md" if is_review else "templates/weekday_story.md"
 
-    # Instantiate the modern, stateless SDK client mapping explicitly
-    client = genai.Client(api_key=api_key)
+    client = genai.Client(api_key=os.environ.get("GEMINI_API_KEY"))
+    model_target = get_valid_model(client)
+    print(f"Routing generation pipeline through active execution node: {model_target}")
 
-    is_review = meta.get("is_review", False)
-    
+    system_instruction = (
+        "You are an expert AWS Solutions Architect. Your role is to return pure data string "
+        "attributes matching the requested JSON output blueprint framework layout completely. "
+        "Do not wrap JSON properties inside markdown backticks or conversational filler text lines. "
+        "Maintain an advanced engineering narrative style mixed with dry, witty Simpsons character choices."
+    )
+
     if is_review:
-        system_instruction = (
-            "You are an expert AWS Solutions Architect and cloud educator. "
-            "Your task is to generate a comprehensive, highly technical AWS Associate "
-            "exam newsletter based on the provided topic. Use a detailed Simpsons analogy. "
-            "Always separate major sections with a clear horizontal rule line (---) "
-            "and use bold lettering for key vocabulary words to maximize scannability. "
-            "Do not include introductory conversational filler. Start directly with the title."
-        )
-        prompt_structure = f"""
-        Generate a comprehensive, scenario-based AWS Sunday Incident Review newsletter.
-        Week Counter: {meta['week']}
-        Forensic Case Focus: {meta['topic']}
-        Target Infrastructure Layer: {meta['target_services']}
-        Simpsons Narrative Hook: {meta['simpsons_angle']}
-        Worst Architectural Move: {meta['worst_solution']}
-        Best Cloud-Native Fix Strategy: {meta['best_solution']}
+        prompt = f"""
+        Compile an advanced AWS Forensic Incident Post-Mortem.
+        Topic: {meta['technical_core']['topic']}
+        Services: {meta['technical_core']['target_services']}
+        Simpsons Narrative Anchor: {meta['technical_core']['simpsons_angle']}
         
-        The layout MUST contain these precise Markdown headers:
-        1. # 🚨 Incident Report: [Topic Name]
-        2. ## 📈 Analytical Breakdown of the Failure
-        3. ## 🔬 SAA-Style Interactive Review Question (Provide a highly realistic scenario multiple choice question with 4 custom options)
-        4. ## 🔑 Comprehensive Evaluation and Explanation of Options (Explain why the correct answer is pristine and deep dive into why every single distractor option fails structurally)
-        5. ## 📊 Quantitative Calculations (Elaborate on this specific LaTeX math metric: {meta['technical_math']})
+        Generate values for this structural schema layout:
+        {{
+          "episode_title": "{meta['metadata']['episode_title']}",
+          "incident_timeline": "Detailed step-by-step technical log of the crash based on: {meta['forensic_prompts']['timeline_prompt']}",
+          "root_cause": "Advanced systemic failure review answering: {meta['forensic_prompts']['root_cause_prompt']}",
+          "financial_damage": "Calculation breakdown processing business losses based on: {meta['forensic_prompts']['financial_prompt']}",
+          "lessons_learned": "Production recovery engineering guidelines answering: {meta['forensic_prompts']['lessons_prompt']}",
+          "next_week_teaser": "High-yield forward-looking teaser text preparing for the next season arc topic step."
+        }}
         """
     else:
-        system_instruction = (
-            "You are an elite AWS Solutions Architect and cloud infrastructure educator. "
-            "Your objective is to generate a comprehensive, highly technical weekday AWS Solutions Architect "
-            "Associate certification preparation newsletter. Use the provided Simpsons analogy to simplify "
-            "the core intuition without diluting professional engineering terminology. Avoid conversational greetings. "
-            "Start directly with the Markdown title '# ⚡ Week X, Drop Y: Topic Name'."
-        )
-        prompt_structure = f"""
-        Generate a comprehensive technical AWS preparation newsletter.
-        Week Counter: {meta['week']}
-        Technical Topic Focus: {meta['topic']}
-        Target Core Cloud Services: {meta['target_services']}
-        Simpsons Narrative Hook: {meta['simpsons_angle']}
-        The Monorail Anti-Pattern (Worst Design): {meta['worst_solution']}
-        The Industrial Patch (Moderate Design): {meta['moderate_solution']}
-        The Well-Architected Masterpiece (Best Design): {meta['best_solution']}
+        prompt = f"""
+        Compile an elite technical cloud architecture newsletter lesson module data layout.
+        Topic: {meta['technical_core']['topic']}
+        Services: {meta['technical_core']['target_services']}
+        Simpsons Narrative Setup: {meta['narrative_hooks']['simpsons_angle']}
         
-        The layout MUST include these exact Markdown headings:
-        1. # ⚡ Week {meta['week']}: [Topic Name]
-        2. ## 🎯 Curiosity Trigger
-        3. ## 🏰 The Springfield Chronicles (Weave a deep, multi-paragraph conceptual analogy based on the hook)
-        4. ## 🛠️ Technical Concept Deep-Dive (Explain the underlying service configurations, parameters, and flags deeply)
-        5. ## 🧬 Architectural Design Evolution (Detail Worst vs Moderate vs Best architectures cleanly)
-        6. ## 🚧 Architectural Guardrails: Do's and Don'ts
-        7. ## 🔍 Similar Problems to Study
-        8. ## 🏗️ Weekend Micro-Project Blueprint (Step-by-step hands-on challenge instructions)
-        9. ## 📐 Technical Calculations & Logic (Write out any relevant capacity formulas using clean, simple plain text code blocks instead of LaTeX notation)
-        10. ## 🌪️ The Architect's Cliffhanger (End with a single, high-stakes unresolved problem or trade-off question to leave them thinking)
+        Generate values for this structural schema layout:
+        {{
+          "episode_title": "{meta['metadata']['episode_title']}",
+          "curiosity": "Generate one highly unexpected, paradox-style question matching: {meta['curiosity_prompt']}",
+          "story_narrative": "Multi-paragraph rich narrative expansion tracking the story elements. Lisa is the Well-Architected standard, Homer causes cost issues, Bart causes security gaps.",
+          "burns_evaluation": "A deep analysis tearing down this specific proposal suggestion: {meta['narrative_hooks']['burns_proposal']}",
+          "barts_evaluation": "A forensic breakdown of exactly why this security failure happened: {meta['narrative_hooks']['barts_incident']}",
+          "decision_tree": {{
+             "scenario": "{meta['decision_tree']['scenario']}",
+             "options": {json.dumps(meta['decision_tree']['options'])},
+             "correct_option": "{meta['decision_tree']['correct_option']}",
+             "rationale": "{meta['decision_tree']['rationale']}"
+          }},
+          "exam_radar": {{
+             "trigger": "{meta['exam_radar']['trigger']}",
+             "distractor": "{meta['exam_radar']['distractor']}",
+             "truth": "{meta['exam_radar']['truth']}"
+          }},
+          "interview": {{
+             "challenge": "{meta['interview']['challenge']}",
+             "answer": "{meta['interview']['answer']}"
+          }},
+          "guardrails": {{
+             "dos": ["Concrete DO implementation tip 1", "Concrete DO implementation tip 2"],
+             "donts": ["Dangerous DON'T anti-pattern 1", "Dangerous DON'T anti-pattern 2"]
+          }},
+          "project": {{
+             "title": "{meta['project']['title']}",
+             "objective": "{meta['project']['objective']}",
+             "steps": {json.dumps(meta['project']['steps'])}
+          }},
+          "technical_math": "Write out the performance metrics or math equations clearly using plain-text code blocks based on: {meta['technical_math_prompt']}",
+          "cliffhanger": "{meta['cliffhanger_prompt']}"
+        }}
         """
 
-    # Define your free-tier fallback hierarchy (from highest capability to fastest workhorse)
-    FALLBACK_MODELS = [
-        "gemini-3.5-flash",       # Tier 1: Best available free reasoning & instruction-following
-        "gemini-2.5-flash",       # Tier 2: Highly stable, deeply reliable baseline
-        "gemini-3.1-flash-lite"   # Tier 3: Ultra-fast backup meant for high-volume processing
-    ]
+    response = client.models.generate_content(
+        model=model_target,
+        contents=prompt,
+        config=types.GenerateContentConfig(
+            system_instruction=system_instruction,
+            response_mime_type="application/json",
+            temperature=0.5
+        )
+    )
 
-    content = None
+    # Process and build JSON payload
+    raw_json = json.loads(response.text)
+    raw_json["metadata"] = meta["metadata"]
+    raw_json["technical_core"] = meta["technical_core"]
+    raw_json["narrative_hooks"] = meta.get("narrative_hooks", {})
+    raw_json["brain_upgrade"] = meta.get("brain_upgrade", {})
     
-    # Iterate sequentially through the fallback models
-    for model_name in FALLBACK_MODELS:
-        try:
-            print(f"Attempting generation using model: {model_name}...")
-            response = client.models.generate_content(
-                model=model_name,
-                contents=prompt_structure,
-                config=types.GenerateContentConfig(
-                    system_instruction=system_instruction,
-                    temperature=0.6,
-                )
-            )
-            content = response.text
-            print(f"✨ Success! Content compiled beautifully using {model_name}.")
-            break  # Break out of the loop completely because we got our text
-            
-        except Exception as e:
-            print(f"⚠️ Warning: {model_name} was bypassed, exhausted, or rate-limited.")
-            print(f"Reason: {e}")
-            print("Shifting down to the next tier in the fallback array...\n")
-            continue
+    if is_review:
+        raw_json["review_drills"] = meta["review_drills"]
 
-    # Final protection step if all free models fail to respond
-    if not content:
-        raise RuntimeError("❌ Catastrophic Error: All available free-tier models have exhausted their quotas.")
+    # Read specific presentation layout template target
+    with open(template_path, "r", encoding="utf-8") as t_file:
+        template = Template(t_file.read())
+
+    final_markdown = template.render(raw_json)
 
     os.makedirs(OUTPUT_DIR, exist_ok=True)
-    output_filename = f"{OUTPUT_DIR}/week_{week:02d}_{current_day}.md"
-    with open(output_filename, "w", encoding="utf-8") as out:
-        out.write(response.text)
+    out_path = f"{OUTPUT_DIR}/week_{week:02d}_{current_day}.md"
+    with open(out_path, "w", encoding="utf-8") as out:
+        out.write(final_markdown)
 
-    print(f"Success: Newsletter file archived at {output_filename}")
-    save_state(week, day_index)
+    print(f"Successfully generated decoupled issue output: {out_path}")
+    save_state(season, week, day_index)
 
 if __name__ == "__main__":
     main()

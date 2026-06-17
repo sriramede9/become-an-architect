@@ -1,0 +1,56 @@
+metadata:
+  season_name: "Springfield Goes Cloud Native"
+  season_arc: "Secure Foundations"
+  week: 1
+  episode_number: 1
+  day: "Monday"
+  is_review: false
+  episode_title: "Homer's Secret Root Vault"
+  previous_episode: "The Local Mainframe Era"
+  next_episode: "Smithers and the Dynamic Badge"
+
+technical_core:
+  topic: "Identity Perimeters, Root Credentials, and Account Blinding"
+  target_services: "AWS Root Account, IAM Access Keys, AWS Organizations, MFA"
+  surprising_fact: "An enterprise-tier AWS cloud ecosystem can run billions of transactional routines with zero permanent root account keys configured."
+  misconception: "The root account user credentials should be rotated every 30 days and assigned to the lead infrastructure manager for daily debugging tasks."
+
+narrative_hooks:
+  simpsons_angle: "Homer is put in charge of creating the plant's master administrative keys and stashes the root credentials on a neon sticky note stuck to the employee breakroom vending machine."
+  burns_proposal: "Let's save deployment time by configuring every automation script across our sister facilities to run under the primary corporate root user password."
+  barts_incident: "Bart spots the root password card, signs into the main console, and accidentally locks Mr. Burns out of his own system billing records."
+
+brain_upgrade:
+  beginner: "Root access is perfectly fine to use as long as the password contains special characters."
+  intermediate: "We must use IAM users for daily engineering and enforce standard password rotation cycles."
+  architect: "Root access must remain completely isolated behind multi-party physical token authorization blocks, routing daily infrastructure control patterns entirely through short-lived identities."
+
+decision_tree:
+  scenario: "Mr. Burns demands a secure deployment strategy for three newly acquired distribution companies in Shelbyville that completely blocks data cross-contamination while consolidating corporate billing operations."
+  options:
+    A: "Create three distinct folder configurations inside a single AWS account using loose IAM user boundaries."
+    B: "Launch independent AWS accounts for each facility and connect them cleanly using AWS Organizations with consolidated billing enabled."
+    C: "Force all entities to share a master account but require every database table to contain a unique site identifier code."
+    D: "Keep the networks disconnected and have local bookkeepers manually mail accounting spreadsheets once a month."
+  correct_option: "B"
+  rationale: "AWS Organizations provides absolute resource isolation at the account boundary level while maintaining automated, centralized administrative billing control."
+
+exam_radar:
+  trigger: "Trigger phrases to watch: 'Secure Root Credentials Configuration' or 'Administrative Compliance Scenarios'."
+  distractor: "Selecting an option that suggests regularly editing or configuring active programmatic access keys for the root account profile."
+  truth: "The absolute correct architectural move is to lock root keys away immediately and utilize temporary identities for infrastructure deployment pipelines."
+
+interview:
+  challenge: "The development team shares a single master administrative access profile to speed up local code testing. Prevent this without blocking their development velocity."
+  answer: "I would mandate the removal of static profiles. I would implement IAM Identity Center linked to our single sign-on system, allowing engineers to assume scoped, short-lived session tokens natively inside their terminals."
+
+project:
+  title: "Multi-Tier Account Isolation Architecture"
+  objective: "Initialize a multi-tier organization tree deploying automated programmatic spending alerts."
+  steps:
+    - "Establish a root management organization hub."
+    - "Configure an AWS Budget limit threshold mapping real-time alerts to an SNS communication route."
+    - "Verify root configuration access keys are completely voided."
+
+technical_math_prompt: "Formulate an identity credential decay index equation tracking structural account risk variables over active credential age metrics."
+cliffhanger_prompt: "We have bolted the exterior security gates of Springfield, but what happens when two internal automated components need to swap data payloads without using static password keys?"

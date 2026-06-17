@@ -1,0 +1,56 @@
+metadata:
+  season_name: "Springfield Goes Cloud Native"
+  season_arc: "Secure Foundations"
+  week: 1
+  episode_number: 2
+  day: "Wednesday"
+  is_review: false
+  episode_title: "Smithers and the Dynamic Badge"
+  previous_episode: "Homer's Secret Root Vault"
+  next_episode: "The Great Subnet Divide"
+
+technical_core:
+  topic: "Temporary Access Delegation, AssumeRole, and STS Mechanics"
+  target_services: "AWS IAM Roles, Trust Policies, AWS STS, IMDSv2"
+  surprising_fact: "IAM Roles do not possess permanent security keys; instead, they generate fleeting cryptographic signatures on the fly."
+  misconception: "Attaching an IAM Role to an virtual machine automatically encrypts all internal application code data layers."
+
+narrative_hooks:
+  simpsons_angle: "Mr. Burns refuses to give anyone permanent keys to the cooling sector, so he forces Waylon Smithers to fetch a temporary, time-bound security badge from an automated gatekeeper every hour."
+  burns_proposal: "Let's save configuration code overhead by generating a single permanent admin Access Key and copying it directly onto every app server file system."
+  barts_incident: "Bart logs into an unprotected app server instance, finds a plaintext credential file sitting on the public desktop layout, and exfiltrates it to access private corporate data."
+
+brain_upgrade:
+  beginner: "As long as access keys are stored in an uncommitted config file, the server is secure."
+  intermediate: "We should use a background cron routine to regularly run rotation scripts for our hardcoded server access keys."
+  architect: "No long-term credentials should ever exist within compute spaces. Servers must dynamically negotiate ephemeral identities using Instance Profiles and IMDSv2."
+
+decision_tree:
+  scenario: "An engineering squad is split: half want to manually rotate access credentials via a daily scheduled server automation task, the other half want to leverage instance profiles. Select the path that minimizes operational overhead."
+  options:
+    A: "Build a custom key rotation bash script and deploy it to every server instance."
+    B: "Attach an explicit IAM Role to an EC2 Instance Profile and let the AWS SDK handle background token generation natively."
+    C: "Hardcode the keys but use a security scanner to flag leaks."
+    D: "Require software developers to manually update server environmental settings via SSH keys every Monday morning."
+  correct_option: "B"
+  rationale: "Instance Profiles delegate token lifecycle management to AWS completely, removing local storage exposure vectors and eliminating custom code maintenance."
+
+exam_radar:
+  trigger: "Trigger vocabulary match: 'Automated Identity Lifecycles' or 'Secure EC2 Data Access Patterns'."
+  distractor: "Options that advise generating dedicated IAM Users specifically for programmatic assignment to virtual machine layers."
+  truth: "Virtual machine entities must always assume identities via IAM Roles, never through long-term IAM User profiles."
+
+interview:
+  challenge: "An attacker leverages a code exploit to compromise an application server and attempts to exfiltrate its attached security permissions. Block this vector."
+  answer: "I would enforce IMDSv2 exclusively across all compute structures. IMDSv2 implements a session-oriented token requirement via HTTP PUT actions, blocking simple SSRF data exfiltration techniques."
+
+project:
+  title: "Zero-Touch Identity Token Delegation"
+  objective: "Configure a secure EC2 instance utilizing temporary tokens to interact with storage assets without credential storage."
+  steps:
+    - "Provision an IAM Role containing an explicit trust definition for the EC2 platform entity."
+    - "Attach this identity configuration to an EC2 Instance Profile wrapper."
+    - "Enforce strict IMDSv2 metadata structural properties on deployment."
+
+technical_math_prompt: "Detail token issuance expiration time delta equations tracking session token validity windows."
+cliffhanger_prompt: "We have secured our identity tokens, but what happens when Homer deploys our entire runtime software footprint inside a single open network tier where any passing stranger can see the database front door?"
