@@ -98,14 +98,17 @@ jobs:
           '
 
       - name: "Dispatch Compiled HTML Newsletter via Mail Relay"
-        uses: dawidd6/action-send-mail@v3
+        # 1. Upgrade from @v3 to @v4 to clear out the Node deprecation warnings
+        uses: dawidd6/action-send-mail@v4
         with:
           server_address: ${{ secrets.MAIL_SERVER }}
           server_port: ${{ secrets.MAIL_PORT }}
+          # 2. FIX: Set to false if using port 587 (Gmail/Outlook standard STARTTLS)
+          # Set to true ONLY if you are using implicit SSL over port 465
+          secure: false 
           username: ${{ secrets.MAIL_USERNAME }}
           password: ${{ secrets.MAIL_PASSWORD }}
           subject: "⚡ Weekly AWS Cloud Architect Digest: Springfield Edition!"
           to: ${{ secrets.RECIPIENT_EMAIL }}
           from: "AWS Cloud Academy <${{ secrets.SENDER_EMAIL }}>"
           html_body: file://output.html
-          secure: true
