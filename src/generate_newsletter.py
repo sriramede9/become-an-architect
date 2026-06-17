@@ -100,7 +100,7 @@ def main():
         Generate values for this structural schema layout:
         {{
           "episode_title": "{meta['metadata']['episode_title']}",
-          "curiosity": "Generate one highly unexpected, paradox-style question matching: {meta['curiosity_prompt']}",
+          "curiosity": "Generate one highly unexpected, paradox-style question analyzing the surprising fact: {meta['technical_core']['surprising_fact']} and debunking the misconception: {meta['technical_core']['misconception']}",
           "story_narrative": "Multi-paragraph rich narrative expansion tracking the story elements. Lisa is the Well-Architected standard, Homer causes cost issues, Bart causes security gaps.",
           "burns_evaluation": "A deep analysis tearing down this specific proposal suggestion: {meta['narrative_hooks']['burns_proposal']}",
           "barts_evaluation": "A forensic breakdown of exactly why this security failure happened: {meta['narrative_hooks']['barts_incident']}",
