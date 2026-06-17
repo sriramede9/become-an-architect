@@ -106,14 +106,40 @@ def main():
         10. ## 🌪️ The Architect's Cliffhanger (End with a single, high-stakes unresolved problem or trade-off question to leave them thinking)
         """
 
-    response = client.models.generate_content(
-        model="gemini-1.5-pro",
-        contents=prompt_structure,
-        config=types.GenerateContentConfig(
-            system_instruction=system_instruction,
-            temperature=0.6,
-        )
-    )
+    # Define your free-tier fallback hierarchy (from highest capability to fastest workhorse)
+    FALLBACK_MODELS = [
+        "gemini-3.5-flash",       # Tier 1: Best available free reasoning & instruction-following
+        "gemini-2.5-flash",       # Tier 2: Highly stable, deeply reliable baseline
+        "gemini-3.1-flash-lite"   # Tier 3: Ultra-fast backup meant for high-volume processing
+    ]
+
+    content = None
+    
+    # Iterate sequentially through the fallback models
+    for model_name in FALLBACK_MODELS:
+        try:
+            print(f"Attempting generation using model: {model_name}...")
+            response = client.models.generate_content(
+                model=model_name,
+                contents=prompt_structure,
+                config=types.GenerateContentConfig(
+                    system_instruction=system_instruction,
+                    temperature=0.6,
+                )
+            )
+            content = response.text
+            print(f"✨ Success! Content compiled beautifully using {model_name}.")
+            break  # Break out of the loop completely because we got our text
+            
+        except Exception as e:
+            print(f"⚠️ Warning: {model_name} was bypassed, exhausted, or rate-limited.")
+            print(f"Reason: {e}")
+            print("Shifting down to the next tier in the fallback array...\n")
+            continue
+
+    # Final protection step if all free models fail to respond
+    if not content:
+        raise RuntimeError("❌ Catastrophic Error: All available free-tier models have exhausted their quotas.")
 
     os.makedirs(OUTPUT_DIR, exist_ok=True)
     output_filename = f"{OUTPUT_DIR}/week_{week:02d}_{current_day}.md"
