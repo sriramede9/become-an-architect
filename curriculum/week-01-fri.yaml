@@ -1,0 +1,10 @@
+week: 1
+day: "Friday"
+is_review: false
+topic: "Virtual Private Clouds, Private Network Isolation, & Basic Routing"
+target_services: "Amazon VPC, Public & Private Subnets, Route Tables, Internet Gateways"
+simpsons_angle: "Designing a robust gated community structure to completely separate Springfield's quiet residential suburbs from the hazardous industrial sector."
+worst_solution: "Deploying production-tier databases and private APIs in a wide-open public subnet with direct internet routing tables to simplify setup."
+moderate_solution: "Placing components in private subnets but utilizing over-permissive network routes and loose firewalls that open internal ports to public components."
+best_solution: "Architecting a multi-tiered VPC with public subnets for load balancers, private subnets for web workers, and isolated subnets for databases with no route out to the internet."
+technical_math: "Provide a standard subnet sizing validation calculation formula mapping CIDR block allocations to physical available IP host constraints using LaTeX."

@@ -1,0 +1,10 @@
+week: 1
+day: "Monday"
+is_review: false
+topic: "Identity Boundaries, Multi-Factor Authentication, & Account Safety"
+target_services: "AWS Root Account, IAM Users, IAM Policies, Multi-Factor Authentication (MFA)"
+simpsons_angle: "Who let Homer near the reactor control panel without a basic security clearance? Analyze the disaster of unchecked root access."
+worst_solution: "Sharing the primary AWS root account email and credentials over text message with the entire engineering team to save configuration time."
+moderate_solution: "Creating standard IAM users for every engineer but leaving administrative wildcard permissions attached directly to their accounts without tracking logs."
+best_solution: "Locking the AWS root account behind hardware MFA, enabling AWS Organizations, deploying AWS IAM Identity Center, and utilizing time-bound, session-scoped access tokens."
+technical_math: "Show an architectural equation calculating IAM access key cryptographic decay risk factor over time using standard LaTeX formatting thresholds."

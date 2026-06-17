@@ -1,0 +1,10 @@
+week: 1
+day: "Wednesday"
+is_review: false
+topic: "Temporary Access Delegation & AssumeRole Mechanics"
+target_services: "IAM Roles, Trust Policies, Permissions Policies, AWS Security Token Service (STS)"
+simpsons_angle: "How does Waylon Smithers securely sign for high-stakes corporate deliveries when Mr. Burns is locked away inside his private security vault?"
+worst_solution: "Generating permanent administrative Access Keys (AKIA) and hardcoding them inside an application's git-committed codebase."
+moderate_solution: "Stashing sensitive cloud credentials inside local server environment files (.env) that require regular manual rotation scripts via SSH keys."
+best_solution: "Attaching an IAM Role to an EC2 Instance Profile, enforcing IMDSv2, and allowing the software to automatically negotiate short-lived, rotating access keys from AWS STS."
+technical_math: "Detail the session duration expiration thresholds and architectural window constraints for temporary token authentication chains using LaTeX."

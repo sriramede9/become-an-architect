@@ -1,0 +1,10 @@
+week: 1
+day: "Sunday"
+is_review: true
+topic: "Incident Report 1: The Plant Access Card Compromise"
+target_services: "AWS CloudTrail, IAM Credential Reports, Amazon GuardDuty Alert Analysis"
+simpsons_angle: "A comprehensive forensic audit of a leaked plant keycard. Track exactly how an unprivileged entity gained unauthorized control room entry."
+worst_solution: "Ignoring the anomaly, manually restarting the affected server instances, and hoping the security vulnerabilities stabilize on their own."
+moderate_solution: "Manually searching raw application logs across individual servers while missing centralized tracking configurations and cloud audit streams."
+best_solution: "Executing an incident response playbook: Parse CloudTrail logs programmatically, locate the specific compromised Access Key ID, issue an explicit IAM deny policy, and isolate the endpoint."
+technical_math: "Formulate a metric tracking average Mean Time to Detection (MTTD) based on continuous security logging API poll frequency using LaTeX."
