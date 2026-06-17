@@ -53,11 +53,12 @@ def main():
     
     if is_review:
         system_instruction = (
-            "You are an expert AWS Solutions Architect specializing in operational forensics. "
-            "Your objective is to generate an interactive AWS Sunday Incident Review newsletter. "
-            "Maintain an advanced, professional engineering architecture tone while using the provided "
-            "Simpsons scenario context to anchor the diagnostic challenge. Do not output conversational filler. "
-            "Start directly with the Markdown title '# 🚨 Incident Report: Topic Name'."
+            "You are an expert AWS Solutions Architect and cloud educator. "
+            "Your task is to generate a comprehensive, highly technical AWS Associate "
+            "exam newsletter based on the provided topic. Use a detailed Simpsons analogy. "
+            "Always separate major sections with a clear horizontal rule line (---) "
+            "and use bold lettering for key vocabulary words to maximize scannability. "
+            "Do not include introductory conversational filler. Start directly with the title."
         )
         prompt_structure = f"""
         Generate a comprehensive, scenario-based AWS Sunday Incident Review newsletter.
@@ -102,7 +103,7 @@ def main():
         6. ## 🚧 Architectural Guardrails: Do's and Don'ts
         7. ## 🔍 Similar Problems to Study
         8. ## 🏗️ Weekend Micro-Project Blueprint (Step-by-step hands-on challenge instructions)
-        9. ## 📐 Technical Calculations & Logic (Expand on this required formula context using LaTeX notation: {meta['technical_math']})
+        9. ## 📐 Technical Calculations & Logic (Write out any relevant capacity formulas using clean, simple plain text code blocks instead of LaTeX notation)
         10. ## 🌪️ The Architect's Cliffhanger (End with a single, high-stakes unresolved problem or trade-off question to leave them thinking)
         """
 
