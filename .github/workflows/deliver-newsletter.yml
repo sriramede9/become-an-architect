@@ -1,0 +1,111 @@
+name: "AWS Architect Educational Delivery Pipeline"
+
+on:
+  schedule:
+    # Triggers precisely every Monday, Wednesday, Friday, and Sunday at 08:00 UTC
+    - cron: "0 8 * * 1,3,5,0"
+  workflow_dispatch:
+    inputs:
+      force_run:
+        description: "Force manual newsletter compilation loop execution"
+        required: false
+        default: "false"
+
+permissions:
+  contents: write
+
+jobs:
+  build_and_publish:
+    runs-on: ubuntu-latest
+    steps:
+      - name: "Checkout Code Repository"
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: "Configure Python Runtime Environment"
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: "pip"
+
+      - name: "Install System and Application Dependencies"
+        run: |
+          python -m pip install --upgrade pip
+          pip install google-genai markdown pyyaml jinja2
+
+      - name: "Execute Newsletter Generation Controller"
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+        run: |
+          python src/generate_newsletter.py
+
+      - name: "Archive Generation Output and Commit State Changes"
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git add data/state.json newsletters/
+          # Commit state and new markdown files only if changes exist to prevent loops
+          git diff-index --quiet HEAD || git commit -m "chore: automated pipeline compilation step [skip ci]"
+          git push origin main
+
+      - name: "Compile Markdown Output to HTML Format"
+        id: compile_html
+        run: |
+          python -c '
+          import markdown
+          import glob
+          import os
+
+          markdown_files = glob.glob("newsletters/*.md")
+          if not markdown_files:
+              raise FileNotFoundError("Error: Generation target markdown collection empty.")
+          newest_file = max(markdown_files, key=os.path.getctime)
+          print(f"Compiling resource target: {newest_file}")
+
+          with open(newest_file, "r", encoding="utf-8") as f:
+              text = f.read()
+
+          html_content = markdown.markdown(text, extensions=["extra", "codehilite"])
+
+          styled_html = f"""
+          <!DOCTYPE html>
+          <html>
+          <head>
+            <meta charset="utf-8">
+            <style>
+              body {{ font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif; line-height: 1.6; color: #1e293b; max-width: 680px; margin: 0 auto; padding: 20px; }}
+              h1 {{ color: #1e3a8a; border-bottom: 3px solid #3b82f6; padding-bottom: 8px; font-size: 1.8em; }}
+              h2 {{ color: #2563eb; margin-top: 28px; border-bottom: 1px solid #e2e8f0; padding-bottom: 4px; font-size: 1.4em; }}
+              h3 {{ color: #1d4ed8; font-size: 1.1em; }}
+              pre {{ background-color: #f8fafc; padding: 14px; border-radius: 8px; overflow-x: auto; border: 1px solid #cbd5e1; font-size: 0.9em; }}
+              code {{ font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; background-color: #f1f5f9; padding: 3px 6px; border-radius: 4px; font-size: 0.85em; color: #0f172a; }}
+              table {{ width: 100%; border-collapse: collapse; margin: 20px 0; font-size: 0.95em; }}
+              th, td {{ border: 1px solid #cbd5e1; padding: 12px; text-align: left; }}
+              th {{ background-color: #f8fafc; font-weight: 600; color: #0f172a; }}
+              ul, ol {{ padding-left: 24px; }}
+              li {{ margin-bottom: 6px; }}
+            </style>
+          </head>
+          <body>
+            {html_content}
+          </body>
+          </html>
+          """
+
+          with open("output.html", "w", encoding="utf-8") as f:
+              f.write(styled_html)
+          '
+
+      - name: "Dispatch Compiled HTML Newsletter via Mail Relay"
+        uses: dawidd6/action-send-mail@v3
+        with:
+          server_address: ${{ secrets.MAIL_SERVER }}
+          server_port: ${{ secrets.MAIL_PORT }}
+          username: ${{ secrets.MAIL_USERNAME }}
+          password: ${{ secrets.MAIL_PASSWORD }}
+          subject: "⚡ Weekly AWS Cloud Architect Digest: Springfield Edition!"
+          to: ${{ secrets.RECIPIENT_EMAIL }}
+          from: "AWS Cloud Academy <${{ secrets.SENDER_EMAIL }}>"
+          html_body: file://output.html
+          secure: true
